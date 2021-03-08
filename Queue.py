@@ -15,3 +15,12 @@ class Queue:
 
     def pop(self, i):
         self.queue.pop(i)
+
+    def isempty(self):
+        if not self.queue:
+            return True
+        else:
+            return False
+
+    def __str__(self):
+        return str(self.queue)

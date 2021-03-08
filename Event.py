@@ -8,4 +8,4 @@ class Event:
         return self.time < other.time
 
     def __str__(self):
-        return self.typ + " of new customer " + ' at t = ' + str(self.time)
+        return self.typ + " of new customer " + ' at t = ' + str(self.time) +  ' in queue ' + str(self.queue)
