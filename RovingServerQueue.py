@@ -64,7 +64,7 @@ class RovingServerQueue:
             self.currentTime = currentEvent.time
             self.processResults(self.currentTime - self.oldTime)
 
-            if currentEvent.typ == 'ARRIVAL':
+            if currentEvent.typ == "ARRIVAL" or currentEvent.typ == "REJOIN":
 
                 customer = Customer(self.currentTime, currentEvent.queue)
 
@@ -121,18 +121,22 @@ class RovingServerQueue:
                             if serverqueue == 1:
                                 if self.queueOne.isempty():
                                     self.scheduleSwitchEvent(serverqueue, mu)
+                                    self.serverStatus = (1, serverqueue)
 
                             elif serverqueue == 2:
                                 if self.queueTwo.isempty():
                                     self.scheduleSwitchEvent(serverqueue, mu)
+                                    self.serverStatus = (1, serverqueue)
 
                             elif serverqueue == 3:
                                 if self.queueThree.isempty():
                                     self.scheduleSwitchEvent(serverqueue, mu)
+                                    self.serverStatus = (1, serverqueue)
 
                             elif serverqueue == 4:
                                 if self.queueFour.isempty():
                                     self.scheduleSwitchEvent(serverqueue, mu)
+                                    self.serverStatus = (1, serverqueue)
 
 
 
@@ -150,18 +154,19 @@ class RovingServerQueue:
                         self.queueFour.addCustomer(customer)
 
 
-                #schedule new arrival
-                if currentEvent.queue == 1:
-                    self.scheduleArrivalEvent(1, self.lamOne)
+                if currentEvent.typ == "ARRIVAL":
+                    #schedule new arrival
+                    if currentEvent.queue == 1:
+                        self.scheduleArrivalEvent(1, self.lamOne)
 
-                elif currentEvent.queue == 2:
-                    self.scheduleArrivalEvent(2, self.lamTwo)
+                    elif currentEvent.queue == 2:
+                        self.scheduleArrivalEvent(2, self.lamTwo)
 
-                elif currentEvent.queue == 3:
-                    self.scheduleArrivalEvent(3, self.lamThree)
+                    elif currentEvent.queue == 3:
+                        self.scheduleArrivalEvent(3, self.lamThree)
 
-                elif currentEvent.queue == 4:
-                    self.scheduleArrivalEvent(4, self.lamFour)
+                    elif currentEvent.queue == 4:
+                        self.scheduleArrivalEvent(4, self.lamFour)
 
             elif currentEvent.typ == 'DEPARTURE':
                 #remove customer from queue
@@ -177,18 +182,19 @@ class RovingServerQueue:
                         muR = self.muROne
 
                         probs = [self.pOneOne, self.pOneTwo, self.pOneThree, self.pOneFour, self.pOneZero]
-                        new_arrival = np.random.choice(switch, 1, p = probs)
+                        new_arrival = np.random.choice(switch, 1, p = probs)[0]
 
                         if new_arrival == 0:
                             pass
                         else:
-                            self.scheduleArrivalEvent(new_arrival, 0)
+                            self.scheduleRejoinEvent(new_arrival)
 
                         if not self.queueOne.isempty():
                             #print(str(self.queueOne) + ' queue 1')
                             self.scheduleDepartureEvent(serverqueue, mu)
                         else:
                             self.scheduleSwitchEvent(serverqueue, muR)
+                            self.serverStatus = (1, serverqueue)
 
 
                     elif currentEvent.queue == 2:
@@ -197,18 +203,19 @@ class RovingServerQueue:
                         muR = self.muRTwo
 
                         probs = [self.pTwoOne, self.pTwoTwo, self.pTwoThree, self.pTwoFour, self.pTwoZero]
-                        new_arrival = np.random.choice(switch, 1, p=probs)
+                        new_arrival = np.random.choice(switch, 1, p=probs)[0]
 
                         if new_arrival == 0:
                             pass
                         else:
-                            self.scheduleArrivalEvent(new_arrival, 0)
+                            self.scheduleRejoinEvent(new_arrival)
 
                         if not self.queueTwo.isempty():
                             #print(str(self.queueTwo) + ' queue 2')
                             self.scheduleDepartureEvent(serverqueue, mu)
                         else:
                             self.scheduleSwitchEvent(serverqueue, muR)
+                            self.serverStatus = (1, serverqueue)
 
 
                     elif currentEvent.queue == 3:
@@ -217,18 +224,19 @@ class RovingServerQueue:
                         muR = self.muRThree
 
                         probs = [self.pThreeOne, self.pThreeTwo, self.pThreeThree, self.pThreeFour, self.pThreeZero]
-                        new_arrival = np.random.choice(switch, 1, p=probs)
+                        new_arrival = np.random.choice(switch, 1, p=probs)[0]
 
                         if new_arrival == 0:
                             pass
                         else:
-                            self.scheduleArrivalEvent(new_arrival, 0)
+                            self.scheduleRejoinEvent(new_arrival)
 
                         if not self.queueThree.isempty():
                             #print(str(self.queueThree) + ' queue 3')
                             self.scheduleDepartureEvent(serverqueue, mu)
                         else:
                             self.scheduleSwitchEvent(serverqueue, muR)
+                            self.serverStatus = (1, serverqueue)
 
 
                     elif currentEvent.queue == 4:
@@ -237,21 +245,22 @@ class RovingServerQueue:
                         muR = self.muRFour
 
                         probs = [self.pFourOne, self.pFourTwo, self.pFourThree, self.pFourFour, self.pFourZero]
-                        new_arrival = np.random.choice(switch, 1, p=probs)
+                        new_arrival = np.random.choice(switch, 1, p=probs)[0]
 
                         if new_arrival == 0:
                             pass
                         else:
-                            self.scheduleArrivalEvent(new_arrival, 0)
+                            self.scheduleRejoinEvent(new_arrival)
 
                         if not self.queueFour.isempty():
                             #print(str(self.queueFour) + ' queue 4')
                             self.scheduleDepartureEvent(serverqueue, mu)
                         else:
                             self.scheduleSwitchEvent(serverqueue, muR)
+                            self.serverStatus = (1, serverqueue)
 
                 else: #server in wrong queue
-                    print('fout')
+                    raise ValueError('fout')
                     pass
 
             elif currentEvent.typ == 'SWITCH':
@@ -287,9 +296,6 @@ class RovingServerQueue:
                         self.serverStatus = (0, queue)
 
 
-                #self.serverStatus = (0, queue)
-
-
             # print(self.currentTime)
             # print(self.queueOne)
             # print(self.queueTwo)
@@ -306,6 +312,9 @@ class RovingServerQueue:
         # print(self.fes)
         # print('')
         print("Average queue length queue one: " + str(self.cumQueueOnelen / self.maxTime))
+        print("Average queue length queue two: " + str(self.cumQueueTwolen / self.maxTime))
+        print("Average queue length queue three: " + str(self.cumQueueThreelen / self.maxTime))
+        print("Average queue length queue four: " + str(self.cumQueueFourlen / self.maxTime))
 
 
     def initializeEmptySystem(self):
@@ -327,7 +336,8 @@ class RovingServerQueue:
         if lam == 0:
             arrivalTime = 0
         else:
-            arrivalTime = np.random.exponential(1 / lam)
+            arrivalTime = np.random.exponential(1/lam)
+
         # schedule arrival at currentTime + arrivaltime
         event = Event("ARRIVAL", self.currentTime + arrivalTime, queue)
         self.fes.add(event)
@@ -340,7 +350,11 @@ class RovingServerQueue:
 
     def scheduleDepartureEvent(self, queue, mu):
         # compute new departure time
-        serviceTime = np.random.exponential(1 / mu)
+        serviceTime = np.random.exponential(mu)
+        # print('')
+        # print('service time:')
+        # print(serviceTime)
+        # print('')
         # schedule arrival at currentTime + arrivaltime
         event = Event("DEPARTURE", self.currentTime + serviceTime, queue)
         self.fes.add(event)
@@ -354,6 +368,10 @@ class RovingServerQueue:
             nextloc = queue + 1
 
         event = Event("SWITCH", self.currentTime + switchTime, nextloc)
+        self.fes.add(event)
+
+    def scheduleRejoinEvent(self, queue):
+        event = Event("REJOIN", self.currentTime, queue)
         self.fes.add(event)
 
     pass
