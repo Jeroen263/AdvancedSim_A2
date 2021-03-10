@@ -95,7 +95,10 @@ class RovingServerQueue:
 
             if currentEvent.typ == "ARRIVAL" or currentEvent.typ == "REJOIN":
 
-                customer = Customer(self.currentTime, currentEvent.queue)
+                if currentEvent.typ == "REJOIN":
+                    customer = self.rejoincustomer
+                else:
+                    customer = Customer(self.currentTime, self.currentTime, currentEvent.queue, currentEvent.queue)
 
                 if self.serverStatus[0] == 0:  #check if server is inactive
 
@@ -128,6 +131,7 @@ class RovingServerQueue:
 
                         self.serverStatus = (1, queue) #misschien fout
                         self.scheduleDepartureEvent(queue, muB)
+                        self.processWaitingTime(customer)
 
                     else: #server inactive, wrong queue
 
@@ -227,19 +231,23 @@ class RovingServerQueue:
                     #switch = [1, 2, 3, 4, 0]
 
                     queue = currentEvent.queue
-                    self.queues[queue].pop(0)
+                    customer = self.queues[queue].queue[0]
+
                     muB = self.muBs[queue]
                     muR = self.muRs[queue]
                     probs = self.ps[queue]
                     new_arrival = np.random.choice(switch, 1, p=probs)[0]
 
                     if new_arrival == self.n:
-                        pass
+                        self.processSojournTime(customer)
                     else:
-                        self.scheduleRejoinEvent(new_arrival)
+                        self.scheduleRejoinEvent(new_arrival, customer)
+
+                    self.queues[queue].pop(0)
 
                     if not self.queues[queue].isempty():
                         self.scheduleDepartureEvent(queue, muB)
+                        self.processWaitingTime(customer)
                     else:
                         self.scheduleSwitchEvent(queue, muR)
                         self.serverStatus = (1, queue)
@@ -336,9 +344,12 @@ class RovingServerQueue:
 
                 queue = currentEvent.queue
                 muB = self.muBs[queue]
+                self.processCycleTime(queue)
 
                 if not self.queues[queue].isempty():
                     self.scheduleDepartureEvent(queue, muB)
+                    customer = self.queues[queue].queue[0]
+                    self.processWaitingTime(customer)
                     self.serverStatus = (1, queue)
                 else:
                     self.serverStatus = (0, queue)
@@ -399,6 +410,13 @@ class RovingServerQueue:
         # print("Average queue length queue four: " + str(self.cumQueueFourlen / self.maxTime))
         for i in range(self.n):
             print("Average queue length queue " + str(i) + ": " + str(self.cumQueueslen[i] / self.maxTime))
+            print("Average waiting time queue " + str(i) + ": " + str(sum(self.waitingTimes[i]) / len(self.waitingTimes[i])))
+            print("Average sojourn time queue " + str(i) + ": " + str(sum(self.sojournTimes[i]) / len(self.sojournTimes[i])))
+            cycles = len(self.cycleTimes[i]) - 1
+            cycletime = self.cycleTimes[i][cycles] - self.cycleTimes[i][0]
+            #print(self.cycleTimes[i], cycles, cycletime)
+            print("Average cycle time queue " + str(i) + ": " + str(cycletime / cycles))
+            print('')
 
 
     def initializeEmptySystem(self):
@@ -406,11 +424,18 @@ class RovingServerQueue:
 
         self.queues = []
         self.cumQueueslen = []
+        self.waitingTimes = []
+        self.cycleTimes = []
+        self.sojournTimes = []
         for i in range(self.n):
             self.queues.append(Queue())
             self.cumQueueslen.append(0)
+            self.waitingTimes.append([])
+            self.cycleTimes.append([])
+            self.sojournTimes.append([])
 
         self.serverStatus = (0, 0) #(idle, queue 1)
+        self.cycleTimes[0].append(0)
         self.fes = FES()
 
     def scheduleArrivalEvent(self, queue, lam):
@@ -431,6 +456,21 @@ class RovingServerQueue:
         # self.cumQueueTwolen = self.cumQueueTwolen + t * self.queueTwo.size()
         # self.cumQueueThreelen = self.cumQueueThreelen + t * self.queueThree.size()
         # self.cumQueueFourlen = self.cumQueueFourlen + t * self.queueFour.size()
+
+    def processWaitingTime(self, customer):
+        queue = customer.queue
+        queueJoinTime = customer.queueJoinTime
+        waitingTime = self.currentTime - queueJoinTime
+        self.waitingTimes[queue].append(waitingTime)
+
+    def processSojournTime(self, customer):
+        queue = customer.queue
+        arrivalTime = customer.arrivalTime
+        sojournTime = self.currentTime - arrivalTime
+        self.sojournTimes[queue].append(sojournTime)
+
+    def processCycleTime(self, queue):
+        self.cycleTimes[queue].append(self.currentTime)
 
     def scheduleDepartureEvent(self, queue, mu):
         # compute new departure time
@@ -453,10 +493,11 @@ class RovingServerQueue:
         event = Event("SWITCH", self.currentTime + switchTime, nextloc)
         self.fes.add(event)
 
-    def scheduleRejoinEvent(self, queue):
+    def scheduleRejoinEvent(self, queue, customer):
         event = Event("REJOIN", self.currentTime, queue)
+        self.rejoincustomer = Customer(customer.arrivalTime, self.currentTime, queue, customer.arrivalQueue)
         self.fes.add(event)
 
     pass
 
-test = RovingServerQueue('input30.txt', 10000)
+test = RovingServerQueue('input30.txt', 100000)
