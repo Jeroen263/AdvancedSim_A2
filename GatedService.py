@@ -105,7 +105,7 @@ class RovingServerQueue:
 
                 if self.serverStatus[0] == 0:  #check if server is inactive
 
-                    if self.serverStatus[1] == currentEvent.queue: #check if server is in same queue as event
+                    if self.serverStatus[1] == currentEvent.queue and self.k < self.gated: #check if server is in same queue as event and customer can be served
 
                         # select the right parameters according to the given queue
                         queue = currentEvent.queue
@@ -249,6 +249,9 @@ class RovingServerQueue:
 
                     self.queues[queue].pop(0)
                     self.k += 1
+                    print(self.k)
+                    print(self.gated)
+                    print('')
 
                     if not self.queues[queue].isempty() and self.k < self.gated:
                         self.scheduleDepartureEvent(queue, muB)
