@@ -348,7 +348,7 @@ class RovingServerQueue:
                 queue = currentEvent.queue
                 muB = self.muBs[queue]
                 self.processCycleTime(queue)
-                self.k=0
+                self.k = 0
 
                 if not self.queues[queue].isempty():
                     self.scheduleDepartureEvent(queue, muB)
