@@ -105,104 +105,20 @@ class RovingServerQueue:
 
                 if self.serverStatus[0] == 0:  #check if server is inactive
 
-                    if self.serverStatus[1] == currentEvent.queue and self.k < self.gated: #check if server is in same queue as event and customer can be served
+                    serverqueue = self.serverStatus[1]
+                    queue = currentEvent.queue
+                    self.queues [queue].addCustomer(customer)
+                    muR = self.muRs [queue]
 
-                        # select the right parameters according to the given queue
-                        queue = currentEvent.queue
-                        muB = self.muBs[queue]
-                        self.queues[queue].addCustomer(customer)
-
-                        # if currentEvent.queue == 1:
-                        #     queue = currentEvent.queue
-                        #     mu = self.muBOne
-                        #     self.queueOne.addCustomer(customer)
-                        #
-                        # elif currentEvent.queue == 2:
-                        #     queue = currentEvent.queue
-                        #     mu = self.muBTwo
-                        #     self.queueTwo.addCustomer(customer)
-                        #
-                        # elif currentEvent.queue == 3:
-                        #     queue = currentEvent.queue
-                        #     mu = self.muBThree
-                        #     self.queueThree.addCustomer(customer)
-                        #
-                        # elif currentEvent.queue == 4:
-                        #     queue = currentEvent.queue
-                        #     mu = self.muBFour
-                        #     self.queueFour.addCustomer(customer)
-
-                        self.serverStatus = (1, queue) #misschien fout
-                        self.scheduleDepartureEvent(queue, muB)
-                        self.processWaitingTime(customer)
-
-                    else: #server inactive, wrong queue
-
-                        serverqueue = self.serverStatus[1]
-                        queue = currentEvent.queue
-                        self.queues[queue].addCustomer(customer)
-                        muR = self.muRs[queue]
-
-                        # if currentEvent.queue == 1:
-                        #     self.queueOne.addCustomer(customer)
-                        #     mu = self.muROne
-                        #
-                        # elif currentEvent.queue == 2:
-                        #     self.queueTwo.addCustomer(customer)
-                        #     mu = self.muRTwo
-                        #
-                        # elif currentEvent.queue == 3:
-                        #     self.queueThree.addCustomer(customer)
-                        #     mu = self.muRThree
-                        #
-                        # elif currentEvent.queue == 4:
-                        #     self.queueFour.addCustomer(customer)
-                        #     mu = self.muRFour
-
-                        if not self.fes.checkSwitch():
-
-                            if self.queues[serverqueue].isempty() or self.gated >= self.k:
-                                self.scheduleSwitchEvent(serverqueue, muR)
-                                self.serverStatus = (1, serverqueue)
-
-                            # if serverqueue == 1:
-                            #     if self.queueOne.isempty():
-                            #         self.scheduleSwitchEvent(serverqueue, mu)
-                            #         self.serverStatus = (1, serverqueue)
-                            #
-                            # elif serverqueue == 2:
-                            #     if self.queueTwo.isempty():
-                            #         self.scheduleSwitchEvent(serverqueue, mu)
-                            #         self.serverStatus = (1, serverqueue)
-                            #
-                            # elif serverqueue == 3:
-                            #     if self.queueThree.isempty():
-                            #         self.scheduleSwitchEvent(serverqueue, mu)
-                            #         self.serverStatus = (1, serverqueue)
-                            #
-                            # elif serverqueue == 4:
-                            #     if self.queueFour.isempty():
-                            #         self.scheduleSwitchEvent(serverqueue, mu)
-                            #         self.serverStatus = (1, serverqueue)
-
-
+                    if not self.fes.checkSwitch():
+                        if self.queues[serverqueue].isempty() or self.gated >= self.k:
+                            self.scheduleSwitchEvent(serverqueue,muR)
+                            self.serverStatus = (1,serverqueue)
 
                 else: #server active
 
                     queue = currentEvent.queue
                     self.queues[queue].addCustomer(customer)
-
-                    # if currentEvent.queue == 1:
-                    #     self.queueOne.addCustomer(customer)
-                    #
-                    # elif currentEvent.queue == 2:
-                    #     self.queueTwo.addCustomer(customer)
-                    #
-                    # elif currentEvent.queue == 3:
-                    #     self.queueThree.addCustomer(customer)
-                    #
-                    # elif currentEvent.queue == 4:
-                    #     self.queueFour.addCustomer(customer)
 
 
                 if currentEvent.typ == "ARRIVAL":
@@ -249,9 +165,6 @@ class RovingServerQueue:
 
                     self.queues[queue].pop(0)
                     self.k += 1
-                    print(self.k)
-                    print(self.gated)
-                    print('')
 
                     if not self.queues[queue].isempty() and self.k < self.gated:
                         self.scheduleDepartureEvent(queue, muB)
@@ -354,8 +267,6 @@ class RovingServerQueue:
                 muB = self.muBs[queue]
                 self.processCycleTime(queue)
                 self.gated = len(self.queues[queue].queue)
-                print(self.gated)
-                print('')
                 self.k = 0
 
                 if not self.queues[queue].isempty():
@@ -404,8 +315,6 @@ class RovingServerQueue:
             # print(self.currentTime)
             # for i in range(self.n):
             #     print(self.queues[i])
-            print(self.fes)
-            print('')
 
 
         # print(self.currentTime)
