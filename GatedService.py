@@ -227,7 +227,7 @@ class RovingServerQueue:
             elif currentEvent.typ == 'DEPARTURE':
                 #remove customer from queue
 
-                if self.serverStatus[1] == currentEvent.queue and self.k < self.gated:  # check if server is in same queue as event, wss onnodig
+                if self.serverStatus[1] == currentEvent.queue:  # check if server is in same queue as event, wss onnodig
 
                     #serverqueue = self.serverStatus[1]
                     switch = range(0, (self.n+1))
@@ -345,8 +345,8 @@ class RovingServerQueue:
                     #         self.serverStatus = (1, serverqueue)
 
                 else: #all initial customers in the queue are served
-                    self.scheduleSwitchEvent(queue, muR)
-                    self.serverStatus = (1, queue)
+                    raise ValueError ('fout')
+                    pass
 
             elif currentEvent.typ == 'SWITCH':
 
