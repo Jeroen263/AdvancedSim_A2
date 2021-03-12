@@ -26,6 +26,7 @@ class RovingServerQueue:
         self.ps = [] #rejoin probabilities
         self.gated = 0
         self.k = 0
+
         for i in range(self.n):
             p = paramlist[4+i] + [np.round(1 - sum(paramlist[4+i]), 2)]
             self.ps.append(p)
@@ -256,10 +257,6 @@ class RovingServerQueue:
                         self.scheduleSwitchEvent(queue, muR)
                         self.serverStatus = (1, queue)
 
-                else:
-                    self.scheduleSwitchEvent (queue, muR)
-                    self.serverStatus = (1, queue)
-
 
                     # if currentEvent.queue == 1:
                     #     self.queueOne.pop(0)
@@ -344,9 +341,9 @@ class RovingServerQueue:
                     #         self.scheduleSwitchEvent(serverqueue, muR)
                     #         self.serverStatus = (1, serverqueue)
 
-                else: #server in wrong queue
-                    raise ValueError('fout')
-                    pass
+                else: #all initial customers in the queue are served
+                    self.scheduleSwitchEvent(queue, muR)
+                    self.serverStatus = (1, queue)
 
             elif currentEvent.typ == 'SWITCH':
 
@@ -400,14 +397,13 @@ class RovingServerQueue:
             # print(self.queueTwo)
             # print(self.queueThree)
             # print(self.queueFour)
-            print(self.fes)
-            print('')
 
             # print(self.currentTime)
             # for i in range(self.n):
             #     print(self.queues[i])
-            # print(self.fes)
-            # print('')
+            print(self.fes)
+            print('')
+
 
         # print(self.currentTime)
         # print(self.queueOne)
