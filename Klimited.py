@@ -157,11 +157,11 @@ class RovingServerQueue:
                         #     self.queueFour.addCustomer(customer)
                         #     mu = self.muRFour
 
-                        if not self.fes.checkSwitch():
+                        #if not self.fes.checkSwitch():
 
-                            if self.queues[serverqueue].isempty() or self.k >= self.ks[serverqueue]:
-                                self.scheduleSwitchEvent(serverqueue, muR)
-                                self.serverStatus = (1, serverqueue)
+                        if self.queues[serverqueue].isempty() or self.k >= self.ks[serverqueue]:
+                            self.scheduleSwitchEvent(serverqueue, muR)
+                            self.serverStatus = (1, serverqueue)
 
 
                             # if serverqueue == 1:
@@ -253,7 +253,7 @@ class RovingServerQueue:
                         self.processWaitingTime(customer)
                     else:
                         self.scheduleSwitchEvent(queue, muR)
-                        self.serverStatus = (1, queue)
+                        #self.serverStatus = (1, queue)
 
 
                     # if currentEvent.queue == 1:
@@ -347,6 +347,7 @@ class RovingServerQueue:
 
                 queue = currentEvent.queue
                 muB = self.muBs[queue]
+                muR = self.muRs[queue]
                 self.processCycleTime(queue)
                 self.k = 0
 
@@ -354,9 +355,9 @@ class RovingServerQueue:
                     self.scheduleDepartureEvent(queue, muB)
                     customer = self.queues[queue].queue[0]
                     self.processWaitingTime(customer)
-                    self.serverStatus = (1, queue)
+                    #self.serverStatus = (1, queue)
                 else:
-                    self.serverStatus = (0, queue)
+                    self.scheduleSwitchEvent(queue, muR)  # schedule another switch event
 
                 # if queue == 1:
                 #     if not self.queueOne.isempty():
