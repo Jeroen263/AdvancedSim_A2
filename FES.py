@@ -18,11 +18,11 @@ class FES:
     def getLength(self):
         return len(self.events)
 
-    def checkSwitch(self):
-        for event in self.events:
-            if event.typ == 'SWITCH':
-                return True
-        return False
+    # def checkSwitch(self):
+    #     for event in self.events:
+    #         if event.typ == 'SWITCH':
+    #             return True
+    #     return False
 
     def __str__(self):
         # Note that if you print self.events, it would not appear to be sorted
