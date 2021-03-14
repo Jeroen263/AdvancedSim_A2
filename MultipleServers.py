@@ -310,4 +310,4 @@ class RovingServerQueue:
 
 
 np.random.seed(10)
-test = RovingServerQueue('input30.txt', 100000, 1)
+test = RovingServerQueue('input30 test3.txt', 1000000, 1)

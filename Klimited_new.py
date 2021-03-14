@@ -141,33 +141,61 @@ class Klimited:
             # print('')
 
 
-        fig1, axs1 = plt.subplots(2, 2)
-        fig2, axs2 = plt.subplots(2, 2)
-        axes = [[0,0], [0,1], [1,0], [1,1]]
-        colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red']
+        # fig1, axs1 = plt.subplots(2, 2)
+        # fig2, axs2 = plt.subplots(2, 2)
+        # axes = [[0,0], [0,1], [1,0], [1,1]]
+        # colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red']
+        #
+        # for i in range(self.n): #print all interesting performance measures and create plots
+        #     print("Average queue length queue " + str(i) + ": " + str(self.cumQueueslen[i] / self.maxTime))
+        #     print("Average waiting time queue " + str(i) + ": " +str(sum(self.waitingTimes[i]) / len(self.waitingTimes[i]))
+        #           + ' ' + str(self.calculateCI(self.waitingTimes[i], 1.96)))
+        #     print("Average sojourn time queue " + str(i) + ": " + str(sum(self.sojournTimes[i]) / len(self.sojournTimes[i]))
+        #           + ' ' + str(self.calculateCI(self.sojournTimes[i], 1.96)))
+        #
+        #     # cycles = len(self.cycleTimes[i]) - 1
+        #     # cycletime = self.cycleTimes[i][cycles] - self.cycleTimes[i][0]
+        #     # print(self.cycleTimes[i], cycles, cycletime)
+        #     # print("Average cycle time queue " + str(i) + ": " + str(cycletime / cycles))
+        #
+        #     cycles = self.calculateCycleTime(i)
+        #     print("Average cycle time queue " + str(i) + ": " + str(sum(cycles) / len(cycles))
+        #           + ' ' + str(self.calculateCI(cycles, 1.96)))
+        #     print('')
+        #
+        #     axs1[axes[i][0], axes[i][1]].plot(self.waitingTimes[i], color=colors[i])
+        #
+        #     axs2[axes[i][0], axes[i][1]].hist(self.waitingTimes[i], bins=range(int(min(self.waitingTimes[i])), int(max(self.waitingTimes[i])) + 1, 1), color=colors[i])
+        #
+        # plt.show()
+            # calculate performance measures and make plots
+        self.calculateCycleTime()
+        self.calculateMovingAverage(self.waitingTimes, self.meanWaitingTimes)
+        self.calculateMovingAverage(self.sojournTimes, self.meanSojournTimes)
+        self.calculateMovingAverage(self.cycleLengths, self.meanCycleTimes)
+        self.makeLinePlot(self.meanWaitingTimes, 'Mean waiting times of customers', 'Customer', 'Waiting time')
+        self.makeLinePlot(self.meanSojournTimes, 'Mean sojourn times of customers', 'Customer', 'Sojourn time')
+        self.makeLinePlot(self.meanCycleTimes, 'Mean cycle time', 'Cycle', 'Time')
+        self.makeHistogram(self.waitingTimes, 'Distribution of waiting times', 'Waiting time',
+                            'Number of customers')
+        self.makeHistogram(self.waitingTimes, 'Distribution of sojourn times', 'Sojourn time',
+                            'Number of customers')
+        self.makeHistogram(self.waitingTimes, 'Distribution of cycle times', 'Cycle time', 'Number of cycles')
 
-        for i in range(self.n): #print all interesting performance measures and create plots
+        for i in range(self.n):  # print all interesting performance measures
             print("Average queue length queue " + str(i) + ": " + str(self.cumQueueslen[i] / self.maxTime))
-            print("Average waiting time queue " + str(i) + ": " +str(sum(self.waitingTimes[i]) / len(self.waitingTimes[i]))
-                  + ' ' + str(self.calculateCI(self.waitingTimes[i], 1.96)))
-            print("Average sojourn time queue " + str(i) + ": " + str(sum(self.sojournTimes[i]) / len(self.sojournTimes[i]))
-                  + ' ' + str(self.calculateCI(self.sojournTimes[i], 1.96)))
-
-            # cycles = len(self.cycleTimes[i]) - 1
-            # cycletime = self.cycleTimes[i][cycles] - self.cycleTimes[i][0]
-            # print(self.cycleTimes[i], cycles, cycletime)
-            # print("Average cycle time queue " + str(i) + ": " + str(cycletime / cycles))
-
-            cycles = self.calculateCycleTime(i)
-            print("Average cycle time queue " + str(i) + ": " + str(sum(cycles) / len(cycles))
-                  + ' ' + str(self.calculateCI(cycles, 1.96)))
+            print("Average waiting time queue " + str(i) + ": " + str(
+                sum(self.waitingTimes[i]) / len(self.waitingTimes[i]))
+                    + ' ' + str(self.calculateCI(self.waitingTimes[i], 1.96)))
+            print("Average sojourn time queue " + str(i) + ": " + str(
+                sum(self.sojournTimes[i]) / len(self.sojournTimes[i]))
+                    + ' ' + str(self.calculateCI(self.sojournTimes[i], 1.96)))
+            print("Average cycle time queue " + str(i) + ": " + str(
+                sum(self.cycleLengths[i]) / len(self.cycleLengths[i]))
+                    + ' ' + str(self.calculateCI(self.cycleLengths[i], 1.96)))
             print('')
 
-            axs1[axes[i][0], axes[i][1]].plot(self.waitingTimes[i], color=colors[i])
 
-            axs2[axes[i][0], axes[i][1]].hist(self.waitingTimes[i], bins=range(int(min(self.waitingTimes[i])), int(max(self.waitingTimes[i])) + 1, 1), color=colors[i])
-
-        plt.show()
 
 
     def initializeEmptySystem(self): #initialize empty system
@@ -179,12 +207,18 @@ class Klimited:
         self.waitingTimes = []
         self.cycleTimes = []
         self.sojournTimes = []
+        self.meanWaitingTimes = []
+        self.meanCycleTimes = []
+        self.meanSojournTimes = []
         for i in range(self.n): #create queues and performance measure variables
             self.queues.append(Queue())
             self.cumQueueslen.append(0)
             self.waitingTimes.append([])
             self.cycleTimes.append([])
             self.sojournTimes.append([])
+            self.meanWaitingTimes.append([])
+            self.meanCycleTimes.append([])
+            self.meanSojournTimes.append([])
 
         self.serverStatus = 0 #initialize server at queue 0
         self.cycleTimes[self.serverStatus].append(0) #first cycle time
@@ -216,12 +250,15 @@ class Klimited:
     def processCycleTime(self, queue):
         self.cycleTimes[queue].append(self.currentTime) #add time of cycle completion
 
-    def calculateCycleTime(self, queue):
-        timestamps = self.cycleTimes[queue] #get times of finished cycles
-        lenOfCycles = np.zeros(len(timestamps)-1) #intialize cycle times array
-        for i in range(len(timestamps)-1): #calculate cycle times
-            lenOfCycles[i] = timestamps[i+1] - timestamps[i]
-        return lenOfCycles #return cycle times
+    def calculateCycleTime(self):
+        self.cycleLengths = []
+        for queue in range(self.n):
+            timestamps = self.cycleTimes[queue] #get times of finished cycles
+            lenOfCycles = np.zeros(len(timestamps)-1) #intialize cycle times array
+            for i in range(len(timestamps)-1): #calculate cycle times
+                lenOfCycles[i] = timestamps[i+1] - timestamps[i]
+
+            self.cycleLengths.append(lenOfCycles)
 
     def scheduleDepartureEvent(self, queue, mu):
         # compute new departure time
@@ -251,6 +288,36 @@ class Klimited:
         ci = (avg-halfWidth, avg+halfWidth) #get ci
         return ci #return ci
 
+    def calculateMovingAverage(self, data, out):
+        for queue in range(self.n):
+            out[queue] = np.cumsum(data[queue])
+            for i in range(len(out[queue])):
+                out[queue][i] = out[queue][i] / (i+1)
+
+    def makeHistogram(self, data, title, xlabel, ylabel):
+        colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple', 'tab:brown', 'tab:pink']
+        for queue in range(len(data)):
+            plt.figure()
+            plt.hist(data[queue], bins=range(int(min(data[queue])), int(max(data[queue])) + 1, 1), color=colors[queue])
+            queuetitle = title + ' queue ' + str(queue+1)
+            plt.title(queuetitle)
+            plt.xlabel(xlabel)
+            plt.ylabel(ylabel)
+            plt.savefig('images/' + queuetitle.replace(' ', '_') + '.png')
+            #plt.show()
+
+    def makeLinePlot(self, data, title, xlabel, ylabel):
+        plt.figure()
+        for queue in range(len(data)):
+            plt.plot(data[queue], label='Queue ' + str(queue + 1))
+
+        plt.title(title)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.legend()
+        plt.savefig('images/' + title.replace(' ', '_') + '.png')
+        #plt.show()
+
 
 np.random.seed(10)
-test = Klimited('input30.txt', 100)
+test = Klimited('input30 test2.txt', 100000)
